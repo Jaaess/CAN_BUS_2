@@ -1,0 +1,21 @@
+MutableInteger gehört scheinbar nur zum PCAN Demo Patket. Es wird seitens Java/Kotlin definitiv nicht referenziert.
+Wenn diese Klasse fehlt, geht es aber nicht gut. Auszug aus dem hs_err_pid Log:
+.
+.
+.
+Stack: [0x0000000059570000,0x0000000059670000],  sp=0x000000005966e970,  free space=1018k
+Native frames: (J=compiled Java code, j=interpreted, Vv=VM code, C=native code)
+V  [jvm.dll+0x15eb62]
+V  [jvm.dll+0x15edb7]
+C  [PCANBasic_JNI.dll+0x1588]
+C  0x0000000002847f54
+
+Java frames: (J=compiled Java code, j=interpreted, Vv=VM code)
+j  peak.can.basic.PCANBasic.GetValue(Lpeak/can/basic/TPCANHandle;Lpeak/can/basic/TPCANParameter;Ljava/lang/Object;I)Lpeak/can/basic/TPCANStatus;+0
+j  com.iav.ces.can.peak.CanParameterAdapters$IntParameter.get()Ljava/lang/Integer;+47
+j  com.iav.ces.can.peak.CanParameterAdapters$MappendIntParameter.get()Lcom/iav/ces/can/peak/CanParameterAdapters$MappedValue;+8
+j  com.iav.ces.can.peak.CanParameterAdapters$MappendIntParameter.get()Ljava/lang/Object;+5
+j  com.iav.ces.can.peak.PCanChannel.isAvailable()Z+41
+.
+.
+.
