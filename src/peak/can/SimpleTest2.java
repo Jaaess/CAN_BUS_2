@@ -3,7 +3,6 @@ package peak.can;
 import peak.can.basic.*;
 
 import java.util.HashMap;
-import java.util.Map;
 
 public class SimpleTest2 {
 
@@ -15,7 +14,6 @@ public class SimpleTest2 {
     private static TPCANTimestamp rcvTime = null;
 
     private static TPCANStatus ret;
-
 
     volatile static ChannelItem channelitem = null;
 
@@ -35,24 +33,74 @@ public class SimpleTest2 {
         TPCANType pcan_type = TPCANType.PCAN_TYPE_NONE;
         TPCANBaudrate pcan_baudrate = TPCANBaudrate.PCAN_BAUD_100K;
 
-        //channelitem = new ChannelItem(TPCANHandle.PCAN_USBBUS1, TPCANType.PCAN_TYPE_ISA_SJA);
         channelitem = new ChannelItem(pcan_handle, pcan_type);
         channelitem.setWorking(true);
 
         TPCANStatus res;
 
-//        res = pcanBasic.Initialize(pcan_handle, pcan_baudrate, pcan_type);
 
         res = pcanBasic.Initialize(pcan_handle, pcan_baudrate, pcan_type, 0, (short) 0);
-//        res = pcanBasic.Initialize(pcan_handle, pcan_baudrate, pcan_type);
+        res = pcanBasic.FilterMessages(pcan_handle, 0x000, 0x700, TPCANMode.PCAN_MODE_STANDARD);
 
         if (res == TPCANStatus.PCAN_ERROR_OK) {
 
-            System.out.println("Working params :\\t" + " TPCANType =" + pcan_type +
-                    "\t TPCANBaudrate =" + pcan_baudrate + "\t TPCANHandle =" + pcan_handle + "\n" +
-                    channelitem.getHandle().toString() + " Successfully initialized");
+            // Map to store received messages
+            HashMap<Integer, TableDataRow> receivedData = new HashMap<Integer, TableDataRow>();
 
-            /*int messageID = 0;
+            res = pcanBasic.FilterMessages(pcan_handle, 0x000, 0x700, TPCANMode.PCAN_MODE_STANDARD);
+            // Create New CANReadThread with default values
+            canReadThread = new CANReadThread(pcanBasic, channelitem, receivedData);
+            canReadThread.setReadTimeStamp(true);
+
+            // Start Timer Thread to read CAN Messages
+            canReadThread.start();
+
+            /*synchronized (canReadThread) {
+                try {
+                    System.out.println("Waiting for canReadThread to complete...");
+                    canReadThread.wait(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }*/
+
+           /* RcvEventDispatcher.setListener(canReadThread);
+            if (channelitem.getWorking()) {
+                TPCANStatus status = pcanBasic.SetRcvEvent(channelitem.getHandle());
+                System.out.println(status);
+            }
+            //Process result
+            for (Map.Entry<Integer, TableDataRow> entry : receivedData.entrySet()) {
+                System.out.println(" key " + entry.getKey() + " value " + entry.getValue());
+            }*/
+
+
+            /*res = pcanBasic.Uninitialize(channelitem.getHandle());
+            if (res == TPCANStatus.PCAN_ERROR_OK) {
+                System.out.println(channelitem.getHandle().toString() + " Successfully unitialized");
+            }*/
+
+
+           /* // Map to store received messages
+            HashMap<Integer, TableDataRow> receivedData = new HashMap<Integer, TableDataRow>();
+            canReceiveThread = new CANReceiveThreadCustomized(pcanBasic, channelitem, receivedData);
+            canReceiveThread.setReadTimeStamp(true);
+            canReceiveThread.start();
+
+            res = pcanBasic.Uninitialize(channelitem.getHandle());
+            if (res == TPCANStatus.PCAN_ERROR_OK) {
+                System.out.println(channelitem.getHandle().toString() + " Successfully unitialized");
+            }*/
+
+        } else {
+            System.out.println("Error by reading the data");
+        }
+    }
+}
+
+
+
+     /*int messageID = 0;
             while (messageID < 100) {
                 TPCANMsg msg = new TPCANMsg();
                 pcanBasic.Read(channelitem.getHandle(), msg, null);
@@ -78,61 +126,3 @@ public class SimpleTest2 {
             }
             pcanBasic.Uninitialize(channelitem.getHandle());
 */
-
-            // Map to store received messages
-            HashMap<Integer, TableDataRow> receivedData = new HashMap<Integer, TableDataRow>();
-
-            // Create New CANReadThread with default values
-            canReadThread = new CANReadThread(pcanBasic, channelitem, receivedData);
-            canReadThread.setReadTimeStamp(true);
-
-            // Start Timer Thread to read CAN Messages
-            canReadThread.start();
-
-            synchronized (canReadThread) {
-                try {
-                    System.out.println("Waiting for canReadThread to complete...");
-                    canReadThread.wait(100);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-
-
-            }
-
-
-            RcvEventDispatcher.setListener(canReadThread);
-            if (channelitem.getWorking()) {
-                TPCANStatus status = pcanBasic.SetRcvEvent(channelitem.getHandle());
-                System.out.println(status);
-            }
-            //Process result
-            for (Map.Entry<Integer, TableDataRow> entry : receivedData.entrySet()) {
-                System.out.println(entry.getKey() + "/*** JAWHAR ***/" + entry.getValue());
-            }
-
-
-            /*res = pcanBasic.Uninitialize(channelitem.getHandle());
-            if (res == TPCANStatus.PCAN_ERROR_OK) {
-                System.out.println(channelitem.getHandle().toString() + " Successfully unitialized");
-            }*/
-
-
-           /* // Map to store received messages
-            HashMap<Integer, TableDataRow> receivedData = new HashMap<Integer, TableDataRow>();
-            canReceiveThread = new CANReceiveThreadCustomized(pcanBasic, channelitem, receivedData);
-            canReceiveThread.setReadTimeStamp(true);
-            canReceiveThread.start();
-
-            res = pcanBasic.Uninitialize(channelitem.getHandle());
-            if (res == TPCANStatus.PCAN_ERROR_OK) {
-                System.out.println(channelitem.getHandle().toString() + " Successfully unitialized");
-            }*/
-
-        } else {
-            System.out.println("Error by reading the data");
-        }
-    }
-
-}
-

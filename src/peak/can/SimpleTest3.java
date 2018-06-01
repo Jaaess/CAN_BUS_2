@@ -43,7 +43,7 @@ public class SimpleTest3 {
         // JNI Initialization
         pcanBasic.initializeAPI();
 
-        TPCANHandle pcan_handle = TPCANHandle.PCAN_PCIBUS2;
+        TPCANHandle pcan_handle = TPCANHandle.PCAN_PCIBUS1;
         TPCANType pcan_type = TPCANType.PCAN_TYPE_NONE;
         TPCANBaudrate pcan_baudrate = TPCANBaudrate.PCAN_BAUD_100K;
 
@@ -61,11 +61,13 @@ public class SimpleTest3 {
         }
 
         canMessage = new TPCANMsg();
-        TPCANTimestamp tpcan_timestamp =  new TPCANTimestamp();
-        tpcan_timestamp.setMicros((short)3);
-        tpcan_timestamp.setMillis((short)2);
-        tpcan_timestamp.setMillis_overflow((short)1);
+        TPCANTimestamp tpcan_timestamp = new TPCANTimestamp();
+        tpcan_timestamp.setMicros((short) 3);
+        tpcan_timestamp.setMillis((short) 2);
+        tpcan_timestamp.setMillis_overflow((short) 1);
 
+
+        res = pcanBasic.FilterMessages(pcan_handle, 0x000, 0x700, TPCANMode.PCAN_MODE_STANDARD);
         // We execute the "Read" function of the PCANBasic
         ret = pcanBasic.Read(pcan_handle, canMessage, tpcan_timestamp);
 
@@ -94,7 +96,7 @@ public class SimpleTest3 {
             msgTableObect = new Object[]{msgType, msgIDStr, msgLength, msgData, msgCount, msgRcvTime};
             //     model.addRow(msgTableObect);
 
-            System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$" + msgTableObect);
+            System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$" + msgType + " " + msgIDStr + " " + msgLength + " " + msgData + " " + msgCount + " " + msgRcvTime);
         }
 
         res = pcanBasic.Uninitialize(channelitem.getHandle());

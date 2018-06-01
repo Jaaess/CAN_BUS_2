@@ -32,54 +32,56 @@ public class SimpleTest {
         // JNI Initialization
         pcanBasic.initializeAPI();
 
-        /*TPCANHandle pcan_handle = TPCANHandle.PCAN_PCIBUS2;
-        TPCANType pcan_type = TPCANType.PCAN_TYPE_NONE;
-        TPCANBaudrate pcan_baudrate = TPCANBaudrate.PCAN_BAUD_100K;*/
-
         TPCANHandle pcan_handle = TPCANHandle.PCAN_PCIBUS1;
         TPCANType pcan_type = TPCANType.PCAN_TYPE_NONE;
-        TPCANBaudrate pcan_baudrate = TPCANBaudrate.PCAN_BAUD_1M;
-
-        //        for (TPCANType pcan_type : TPCANType.values()) {
-        //        for (TPCANBaudrate pcan_baudrate : TPCANBaudrate.values()) {
-        //        for (TPCANHandle pcan_handle : TPCANHandle.values()) {
-
-        //channelitem = new ChannelItem(TPCANHandle.PCAN_USBBUS1, TPCANType.PCAN_TYPE_ISA_SJA);
-        channelitem = new ChannelItem(pcan_handle, pcan_type);
-        channelitem.setWorking(true);
+        TPCANBaudrate pcan_baudrate = TPCANBaudrate.PCAN_BAUD_100K;
 
         TPCANStatus res;
-        //         res = pcanBasic.Initialize(TPCANHandle.PCAN_USBBUS1, pcan_baudrate, pcan_type, 100, (short) 3);
-        res = pcanBasic.Initialize(pcan_handle, pcan_baudrate, pcan_type, 0, (short) 0);
 
-        if (res == TPCANStatus.PCAN_ERROR_OK) {
+        try {
+            res = pcanBasic.Initialize(pcan_handle, TPCANBaudrate.PCAN_BAUD_100K, TPCANType.PCAN_TYPE_NONE, 0, (short) 0);
 
-            System.out.println("NO NO NO NO Error by reading the data \n TPCANType =" + pcan_type +
-                    "\n TPCANBaudrate =" + pcan_baudrate + "\n TPCANHandle =" + pcan_handle + "\n" +
-                    channelitem.getHandle().toString() + " Successfully initialized");
+            res = pcanBasic.FilterMessages(pcan_handle, 0x000, 0x700, TPCANMode.PCAN_MODE_STANDARD);
+            if (res == TPCANStatus.PCAN_ERROR_OK) {
+//                {
+//                    TPCANMsg msg = new TPCANMsg();
+//                    msg.setID(0x700);
+//                    msg.setData(new byte[]{0x02, 0x3E, 0x00}, (byte) 3);
+//                    msg.setType(TPCANMessageType.PCAN_MESSAGE_STANDARD);
+//                    res = pcanBasic.Write(pcan_handle, msg);
+//                    System.out.println("Write: " + res);
+//                }
 
-            TPCANMsg msg = new TPCANMsg();
-            pcanBasic.Read(channelitem.getHandle(), msg, null);
-            pcanBasic.Uninitialize(channelitem.getHandle());
+                for (int i = 0; i < 1000; i++) {
+                    {
+                        TPCANMsg msg = new TPCANMsg();
+                        TPCANTimestamp timestamp = new TPCANTimestamp();
+                        msg = new TPCANMsg();
+                        res = pcanBasic.Read(pcan_handle, msg, timestamp);
+                        System.out.println("Read: " + res);
+                        System.out.println(convertToString(msg));
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException e) {
+                        }
+                    }
+                }
 
-//            // Create New CANReadThread with default values
-//            canReadThread = new CANReadThread(pcanBasic, channelitem, receivedData);
-//            // Start Timer Thread to read CAN Messages
-//            canReadThread.start();
-//
-//            //Process result
-//            for (Map.Entry<Integer, TableDataRow> entry : receivedData.entrySet()) {
-//                System.out.println(entry.getKey() + "/*** JAWHAR ***/" + entry.getValue());
-//            }
-//            pcanBasic.Uninitialize(channelitem.getHandle());
-
-        } else {
-            System.out.println("Error by reading the data");
-            new RuntimeException("Error by reading the data");
+            } else {
+                System.out.println("Error by reading the data");
+                new RuntimeException("Error by reading the data");
+            }
+        } finally {
+            res = pcanBasic.Uninitialize(pcan_handle);
         }
+    }
 
-        //        }
-        //        }
-        //        }
+    private static String convertToString(TPCANMsg msg) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("ID: %02X / ", msg.getID()));
+        for (byte b : msg.getData()) {
+            sb.append(String.format("%02X ", b));
+        }
+        return sb.toString();
     }
 }
